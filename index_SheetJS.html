@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DevExtreme DataGrid to Excel / SheetJS</title>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/18.2.3/css/dx.common.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/18.2.3/css/dx.light.css" />
+    <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/18.2.3/js/dx.all.debug.js"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.14.1/xlsx.full.min.js"></script>    
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+
+</head>
+<body>
+    <script>
+        function ExportToExcel_writeFile() {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([['Hello', 'DevExtreme', 'SheetJS', 'ExportToExcel_writeFile']]);
+            XLSX.utils.book_append_sheet(wb, ws, 'sheet 42');
+            XLSX.writeFile(wb, 'test.xlsx');
+        }
+
+        function ExportToExcel_FileSaver() {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet([['Hello', 'DevExtreme', 'SheetJS', 'ExportToExcel_FileSaver']]);
+            XLSX.utils.book_append_sheet(wb, ws, 'sheet 42');
+            const wbout = XLSX.write(wb, { bookType:'xlsx', type: 'binary' });
+
+            //https://redstapler.co/sheetjs-tutorial-create-xlsx/
+
+            function s2ab(s) { 
+                var buf = new ArrayBuffer(s.length); //convert s to arrayBuffer
+                var view = new Uint8Array(buf);  //create uint8array as viewer
+                for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF; //convert to octet
+                return buf;    
+            }
+            saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'test.xlsx');    
+        }
+    </script>
+
+    <div class="ExportToExcel_writeFile"></div>
+    <div class="ExportToExcel_FileSaver"></div>
+    <div class="jsdxDataGrid"></div>
+    <script>
+        (function() {
+            const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid'), {
+                columns: [
+                    { dataField: "f1", width: 100 },
+                ],
+                showColumnHeaders: true,
+                dataSource: [],
+            });
+
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_writeFile'), {
+                text: 'ExportToExcel_writeFile',
+                onClick: e => ExportToExcel_writeFile()
+            });
+
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_FileSaver'), {
+                text: 'ExportToExcel_FileSaver',
+                onClick: e => ExportToExcel_FileSaver()
+            });
+            
+        })();
+    </script>
+
+</body>
+</html> 
