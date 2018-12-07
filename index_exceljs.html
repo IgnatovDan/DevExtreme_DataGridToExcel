@@ -13,40 +13,25 @@
 </head>
 <body>
     <script>
-        function ExportToExcel_FileSaver() {
+        function ExportToExcel(dxDataGrid, saveMode) {
             const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('sheet 42', {
-                properties: {
-                    tabColor: {
-                        argb: 'FFC0000'
-                    }
-                }
-            });
-            worksheet.getCell('A1').value = 'Hello';
-            worksheet.getCell('B1').value = 'DevExtreme';
-            worksheet.getCell('C1').value = 'exceljs';
-            worksheet.getCell('D1').value = 'ExportToExcel_FileSaver';
-            ExportToExcel_FileSaver
-            workbook.xlsx.writeBuffer()
+            const worksheet = workbook.addWorksheet('sheet 42');
+            const columns = dxDataGrid.getVisibleColumns();
+            for(let i = 0; i < columns.length; i++) {
+                // https://support.microsoft.com/en-ca/help/833402/how-to-convert-excel-column-numbers-into-alphabetical-characters
+                worksheet.getCell(String.fromCharCode(65 + i) + '1').value = columns[i].caption;
+            }
+            worksheet.getCell('A10').value = 'exceljs';
+            worksheet.getCell('B10').value = saveMode;
+
+            if(saveMode === 'FileSaver') {
+                workbook.xlsx.writeBuffer()
                 .then(function(buffer) {
                     saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
-                }
-            );
-        }
-        function ExportToExcel_AnchorClick() {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('sheet 42', {
-                properties: {
-                    tabColor: {
-                        argb: 'FFC0000'
-                    }
-                }
-            });
-            worksheet.getCell('A1').value = 'Hello';
-            worksheet.getCell('B1').value = 'DevExtreme';
-            worksheet.getCell('C1').value = 'exceljs';
-            worksheet.getCell('D1').value = 'ExportToExcel_AnchorClick';
-            workbook.xlsx.writeBuffer()
+                });
+            }
+            else {
+                workbook.xlsx.writeBuffer()
                 .then(function(buffer) {
                     //const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
                     const blob = new Blob([buffer], { type: 'application/octet-stream' });
@@ -56,8 +41,8 @@
                     anchor.download = 'test.xlsx';
                     anchor.click();
                     window.URL.revokeObjectURL(url);
-                }
-            );
+                });
+            }
         }
     </script>
 
@@ -69,6 +54,9 @@
             const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid'), {
                 columns: [
                     { dataField: "f1", width: 100 },
+                    { dataField: "f2", width: 50 },
+                    { dataField: "f3", width: 100 },
+                    { dataField: "f4", width: 200 },
                 ],
                 showColumnHeaders: true,
                 dataSource: [],
@@ -76,11 +64,11 @@
 
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_FileSaver'), {
                 text: 'ExportToExcel_FileSaver',
-                onClick: e => ExportToExcel_FileSaver()
+                onClick: e => ExportToExcel(dxDataGrid, 'FileSaver')
             });
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_AnchorClick'), {
                 text: 'ExportToExcel_AnchorClick',
-                onClick: e => ExportToExcel_AnchorClick()
+                onClick: e => ExportToExcel(dxDataGrid, 'Anchor')
             });
         })();
     </script>

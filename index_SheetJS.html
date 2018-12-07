@@ -13,28 +13,40 @@
 </head>
 <body>
     <script>
-        function ExportToExcel_writeFile() {
+        function ExportToExcel(dxDataGrid, saveMode) {
             const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet([['Hello', 'DevExtreme', 'SheetJS', 'ExportToExcel_writeFile']]);
-            XLSX.utils.book_append_sheet(wb, ws, 'sheet 42');
-            XLSX.writeFile(wb, 'test.xlsx');
-        }
-
-        function ExportToExcel_FileSaver() {
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet([['Hello', 'DevExtreme', 'SheetJS', 'ExportToExcel_FileSaver']]);
-            XLSX.utils.book_append_sheet(wb, ws, 'sheet 42');
-            const wbout = XLSX.write(wb, { bookType:'xlsx', type: 'binary' });
-
-            //https://redstapler.co/sheetjs-tutorial-create-xlsx/
-
-            function s2ab(s) { 
-                var buf = new ArrayBuffer(s.length); //convert s to arrayBuffer
-                var view = new Uint8Array(buf);  //create uint8array as viewer
-                for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF; //convert to octet
-                return buf;    
+            const columns = dxDataGrid.getVisibleColumns();
+            const sheetCells = [];
+            sheetCells[0] = [];
+            for(let i = 0; i < columns.length; i++) {
+                sheetCells[0].push(columns[i].caption);
             }
-            saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'test.xlsx');    
+            for(let i = 1; i < 11; i++) {
+                sheetCells[i] = ['', ''];
+            }
+            const ws = XLSX.utils.aoa_to_sheet(sheetCells);
+            
+            //ws[XLSX.utils.encode_cell({ r: 10, c: 0 })] = { t: 's', v: 'SheetJS'};
+            ws['A11'] = { t: 's', v: 'SheetJS'};
+            //ws[XLSX.utils.encode_cell({ r: 10, c: 1 })] = { t: 's', v: saveMode};
+            ws['B11'] = { t: 's', v: saveMode};
+            XLSX.utils.book_append_sheet(wb, ws, 'sheet 42');
+
+            if(saveMode === 'FileSaver') {
+                const wbout = XLSX.write(wb, { bookType:'xlsx', type: 'binary' });
+
+                function s2ab(s) { // TODO: https://redstapler.co/sheetjs-tutorial-create-xlsx/
+                    var buf = new ArrayBuffer(s.length); //convert s to arrayBuffer
+                    var view = new Uint8Array(buf);  //create uint8array as viewer
+                    for (var i=0; i<s.length; i++) view[i] = s.charCodeAt(i) & 0xFF; //convert to octet
+                    return buf;
+                }
+                saveAs(new Blob([s2ab(wbout)],{type:"application/octet-stream"}), 'test.xlsx');    
+            }
+            else {
+                XLSX.writeFile(wb, 'test.xlsx');
+            }
+
         }
     </script>
 
@@ -46,6 +58,9 @@
             const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid'), {
                 columns: [
                     { dataField: "f1", width: 100 },
+                    { dataField: "f2", width: 50 },
+                    { dataField: "f3", width: 100 },
+                    { dataField: "f4", width: 200 },
                 ],
                 showColumnHeaders: true,
                 dataSource: [],
@@ -53,12 +68,12 @@
 
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_writeFile'), {
                 text: 'ExportToExcel_writeFile',
-                onClick: e => ExportToExcel_writeFile()
+                onClick: e => ExportToExcel(dxDataGrid, 'writeFile')
             });
 
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_FileSaver'), {
                 text: 'ExportToExcel_FileSaver',
-                onClick: e => ExportToExcel_FileSaver()
+                onClick: e => ExportToExcel(dxDataGrid, 'FileSaver')
             });
             
         })();
