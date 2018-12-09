@@ -159,21 +159,33 @@
             return String.fromCharCode(65 + number); // https://support.microsoft.com/en-ca/help/833402/how-to-convert-excel-column-numbers-into-alphabetical-characters
         }
 
-        function CreateSheetData(dxDataGrid) {
-            debugger;
-            let result = '<sheetData>';
+        async function CreateSheetData(dxDataGrid) {
+            let result = '<sheetData>\r\n';
             const columns = dxDataGrid.getVisibleColumns();
-            result += `<row r="1" spans="1:${columns.length}" x14ac:dyDescent="0.25">`;
+            result += `<row r="1" spans="1:${columns.length}" x14ac:dyDescent="0.25">\r\n`;
             for(let i = 0; i < columns.length; i++) {
                 sharedStrings.push(columns[i].caption);
                 // Set column header cells font to bold:
-                result += `<c r="${ToExcelColumn(i)}1" s="${styleFontBoldId}" t="s"><v>${sharedStrings.length - 1}</v></c>`;
+                result += `<c r="${ToExcelColumn(i)}1" s="${styleFontBoldId}" t="s"><v>${sharedStrings.length - 1}</v></c>\r\n`;
             }
-            result += '</row>';
-            result += `<row r="${lastExcelRowNumber}" spans="1:1" x14ac:dyDescent="0.25">`;
+            result += '</row>\r\n';
+
+            const sourceItems = await dxDataGrid.getController("data").loadAll();
+
+            for(let i = 0; i < sourceItems.length; i++) {
+                const values = sourceItems[i].values;
+                const rowNumber = i + 2;
+                result += `<row r="${rowNumber}" spans="${rowNumber}:${values.length}" x14ac:dyDescent="0.25">\r\n`;
+                for(let j = 0; j < values.length; j++) {
+                    result += `<c r="${ToExcelColumn(j)}${rowNumber}" t="n"><v>${values[j]}</v></c>\r\n`; // TODO: `t="n"` means 'Number' value only
+                }
+                result += '</row>\r\n';
+            }
+
+            result += `<row r="${lastExcelRowNumber}" spans="1:1" x14ac:dyDescent="0.25">\r\n`;
             sharedStrings.push('custom');
-            result += `<c r="${ToExcelColumn(0)}${lastExcelRowNumber}" t="s"><v>${sharedStrings.length - 1}</v></c>`;
-            result += '</row>';
+            result += `<c r="${ToExcelColumn(0)}${lastExcelRowNumber}" t="s"><v>${sharedStrings.length - 1}</v></c>\r\n`;
+            result += '</row>\r\n';
             result += '</sheetData>';
             return result;
         }
@@ -188,11 +200,11 @@
             return result;
         }
 
-        function CreateSheetXml(dxDataGrid) {
+        async function CreateSheetXml(dxDataGrid) {
             return sheet1_xml_part1 +
                 CreateDimension(dxDataGrid) +
-                sheet1_xml_part3 +
-                CreateSheetData(dxDataGrid) +
+                sheet1_xml_part3 + '\r\n' +
+                await CreateSheetData(dxDataGrid) +
                 sheet1_xml_part5;
         }
 
@@ -223,7 +235,6 @@
         }
 
         function CreateStylesXml() {
-            debugger;
             return styles_xml_part1 + '\r\n' +
                 CreateFontsXml() +
                 styles_xml_part3 +
@@ -231,7 +242,7 @@
                 styles_xml_part5;
         }
 
-        function ExportToExcel(dxDataGrid) {
+        async function ExportToExcel(dxDataGrid) {
             const zip = new JSZip();
             
             zip.file('_rels\\.rels', relsFile);
@@ -239,7 +250,7 @@
             zip.file('docProps\\core.xml', core_xml);
             zip.file('xl\\_rels\\workbook.xml.rels', workbook_xml_rels);
             zip.file('xl\\theme\\theme1.xml', theme1_xml);
-            zip.file('xl\\worksheets\\sheet1.xml', CreateSheetXml(dxDataGrid));
+            zip.file('xl\\worksheets\\sheet1.xml', await CreateSheetXml(dxDataGrid));
             zip.file('xl\\sharedStrings.xml', CreateSharedStringsXml());
             zip.file('xl\\styles.xml', CreateStylesXml());
             zip.file('xl\\workbook.xml', workbook_xml);
@@ -269,7 +280,10 @@
                     { dataField: "f4", width: 200 },
                 ],
                 showColumnHeaders: true,
-                dataSource: [],
+                dataSource: [
+                    {f1: 11, f2: 12, f3: 13, f4: 14},
+                    {f1: 21, f2: 22, f3: 23, f4: 24},
+                ],
             });
 
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel'), {
