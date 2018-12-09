@@ -104,20 +104,17 @@
 
         const sheet1_xml_part1 = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' +
             '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
-            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" ' +
-            'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac" ' +
-            'xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac">';
+            'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">';
         //const sheet1_xml_part2_dimension = '<dimension ref="A1"/>'; - CreateDimension
         const sheet1_xml_part3 = '<sheetViews><sheetView tabSelected="1" workbookViewId="0"/></sheetViews>' + 
-            '<sheetFormatPr defaultRowHeight="15" x14ac:dyDescent="0.25"/>';
+            '<sheetFormatPr defaultRowHeight="15"/>';
         //const sheet1_xml_part4_sheetData = '<sheetData/>'; - CreateSheetData
         const sheet1_xml_part5 = '<pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/>' +
             '</worksheet>';
 
         const styles_xml_part1 = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' +
             '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
-            'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="x14ac" ' +
-            'xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac">';
+            'xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">';
         //const styles_xml_part2_fonts_part1 = '<fonts count="1">'; - CreateFontsXml
         const styles_xml_part2_fonts_part2 = '<font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font>';
         //const styles_xml_part2_fonts_part3 = '</fonts>'; - CreateFontsXml
@@ -162,7 +159,7 @@
         async function CreateSheetData(dxDataGrid) {
             let result = '<sheetData>\r\n';
             const columns = dxDataGrid.getVisibleColumns();
-            result += `<row r="1" spans="1:${columns.length}" x14ac:dyDescent="0.25">\r\n`;
+            result += `<row r="1" spans="1:${columns.length}">\r\n`;
             for(let i = 0; i < columns.length; i++) {
                 sharedStrings.push(columns[i].caption);
                 // Set column header cells font to bold:
@@ -175,14 +172,14 @@
             for(let i = 0; i < sourceItems.length; i++) {
                 const values = sourceItems[i].values;
                 const rowNumber = i + 2;
-                result += `<row r="${rowNumber}" spans="${rowNumber}:${values.length}" x14ac:dyDescent="0.25">\r\n`;
+                result += `<row r="${rowNumber}" spans="${rowNumber}:${values.length}">\r\n`;
                 for(let j = 0; j < values.length; j++) {
                     result += `<c r="${ToExcelColumn(j)}${rowNumber}" t="n"><v>${values[j]}</v></c>\r\n`; // TODO: `t="n"` means 'Number' value only
                 }
                 result += '</row>\r\n';
             }
 
-            result += `<row r="${lastExcelRowNumber}" spans="1:1" x14ac:dyDescent="0.25">\r\n`;
+            result += `<row r="${lastExcelRowNumber}" spans="1:1">\r\n`;
             sharedStrings.push('custom');
             result += `<c r="${ToExcelColumn(0)}${lastExcelRowNumber}" t="s"><v>${sharedStrings.length - 1}</v></c>\r\n`;
             result += '</row>\r\n';
