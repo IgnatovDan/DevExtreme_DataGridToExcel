@@ -20,6 +20,12 @@
             sheetCells[0] = [];
             for(let i = 0; i < columns.length; i++) {
                 sheetCells[0].push(columns[i].caption);
+
+                // Set column header cells font to bold:
+                // - bold font is a part of 'cell style'
+                // - 'cell style' is not supported in the 'open source' version
+                // - 'cell style' is a part of the 'Pro compendium', https://github.com/SheetJS/js-xlsx/issues/74
+                
             }
             for(let i = 1; i < 11; i++) {
                 sheetCells[i] = ['', ''];

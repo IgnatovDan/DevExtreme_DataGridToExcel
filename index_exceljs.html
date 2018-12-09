@@ -18,8 +18,13 @@
             const worksheet = workbook.addWorksheet('sheet 42');
             const columns = dxDataGrid.getVisibleColumns();
             for(let i = 0; i < columns.length; i++) {
+                const cell = worksheet.getCell(String.fromCharCode(65 + i) + '1');
                 // https://support.microsoft.com/en-ca/help/833402/how-to-convert-excel-column-numbers-into-alphabetical-characters
-                worksheet.getCell(String.fromCharCode(65 + i) + '1').value = columns[i].caption;
+                cell.value = columns[i].caption;
+
+                // Set column header cells font to bold:
+                cell.font = cell.font || {};
+                cell.font.bold = true;
             }
             worksheet.getCell('A10').value = 'exceljs';
             worksheet.getCell('B10').value = saveMode;
