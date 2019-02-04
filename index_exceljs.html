@@ -41,8 +41,38 @@
                 for(let j = 0; j < sourceItems[i].values.length; j++) {
                     const cell = dataRow.getCell(j + 1);
                     cell.value = sourceItems[i].values[j];
+
+                    /*if(typeof cell.value === "string") {
+                        cell.value = Number(cell.value);
+                    } else {
+                        cell.value = String(cell.value);
+                    }*/
+
+                    if((i + j) % 5 === 0) {
+                        cell.font = cell.font || {};
+                        cell.font.underline = true;
+                    }                    
+                    if((i + j) % 7 === 0) {
+                        cell.font = cell.font || {};
+                        cell.font.bold = true;
+                    }
+                    if((i + j) % 11 === 0) {
+                        cell.font = cell.font || {};
+                        cell.font.italic = true;
+                    }
+
+                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                    if((i + j) % 13 === 0) {
+                        cell.fill = cell.fill || {};
+                        cell.fill ={
+                            type: 'pattern',
+                            pattern: 'solid',
+                            fgColor: { argb:'FF' + (i+j)%99 + i%99 + '00' }
+                        };
+                    }
                 }
             }
+
             performance.mark("createCells end");
             performance.measure("createCells", "createCells start", "createCells end");
             console.log("createCells: " + performance.getEntriesByName("createCells")[0].duration);
@@ -97,8 +127,8 @@
                 ],
                 showColumnHeaders: true,
                 dataSource: [
-                    {f1: 11, f2: 12, f3: 13, f4: 14},
-                    {f1: 21, f2: 22, f3: 23, f4: 24},
+                    {f1: 11, f2: 12, f3: "13", f4: 14 },
+                    {f1: 21, f2: "asdf", f3: 23, f4: "24" },
                 ],
                 export: {
                     enabled: true,
@@ -174,5 +204,38 @@
             });
         })();
     </script>
+
+    <hr/><br/>
+    <div class="ExportToExcel_valueTypes"></div>
+    <div class="jsdxDataGrid_valueTypes">Loading....</div>
+    <script>
+        (function() {
+            const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_valueTypes'), {
+                columns: [
+                    { dataField: "f1", dataType: "string" },
+                    { dataField: "f2", dataType: "number" },
+                    { dataField: "f3", dataType: "date" },
+                    { dataField: "f4", dataType: "boolean" },
+                    { dataField: "f5", dataType: "object" },
+                    { dataField: "f6", dataType: "datetime" },
+                ],
+                showColumnHeaders: true,
+                dataSource: [
+                    {f1: "11", f2: 123456789, f3: new Date(), f4: true, f5: { firstName: "Sam" }, f6: new Date() },
+                    {f1: null, f2: null, f3: null, f4: null, f5: null, f6: null },
+                    {f1: undefined, f2: undefined, f3: undefined, f4: undefined, f5: undefined, f6: undefined },
+                ],
+                export: {
+                    enabled: true,
+                },
+            });
+
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_valueTypes'), {
+                text: 'Export',
+                onClick: e => ExportToExcel(dxDataGrid, 'FileSaver')
+            });
+        })();
+    </script>
+
 </body>
 </html> 
