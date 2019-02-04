@@ -237,5 +237,36 @@
         })();
     </script>
 
+    <hr/><br/>
+    <div class="ExportToExcel_randomCells"></div>
+    <div class="jsdxDataGrid_randomCells">Click the button....</div>
+    <script>
+        function randomExcelCells() {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('sheet 42');
+
+            for(let i = 0; i < 1000; i++) {
+                const dataRow = worksheet.addRow();
+                for(let j = 0; j < 50; j++) {
+                    if((i + j) % 27 === 0) {
+                        const cell = dataRow.getCell(j + 1);
+                        cell.value = (i + j);
+                    }
+                }
+            }
+
+            workbook.xlsx.writeBuffer()
+            .then(function(buffer) {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
+            });
+        }
+
+        (function() {
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_randomCells'), {
+                text: 'Export',
+                onClick: e => randomExcelCells()
+            });
+        })();
+    </script>
 </body>
 </html> 
