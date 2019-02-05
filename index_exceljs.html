@@ -268,5 +268,127 @@
             });
         })();
     </script>
+
+    <hr/><br/>
+    <div class="ExportToExcel_outlineLevel"></div>
+    <div class="jsdxDataGrid_outlineLevel">Loading....</div>
+    <script>
+        async function exportGroupRows(dxDataGrid) {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('sheet 42');
+
+            worksheet.properties.outlineProperties = {
+                summaryBelow: false,
+                summaryRight: false,
+            };
+
+            const columns = dxDataGrid.getVisibleColumns();
+            const headerRow = worksheet.addRow();
+            headerRow.getCell(1).value = 'F1';
+            headerRow.getCell(2).value = 'F2';
+            headerRow.getCell(3).value = 'F3';
+
+            const groupRow1 = worksheet.addRow();
+            groupRow1.getCell(1).value = 'f1';
+
+            const groupRow2 = worksheet.addRow();
+            groupRow2.outlineLevel = 1;
+            groupRow2.getCell(2).value = 'f2';
+
+            const dataRow1 = worksheet.addRow();
+            dataRow1.outlineLevel = 2;
+            dataRow1.getCell(3).value = 'f3_1';
+            const dataRow2 = worksheet.addRow();
+            dataRow2.outlineLevel = 2;
+            dataRow2.getCell(3).value = 'f3_2';
+
+            workbook.xlsx.writeBuffer()
+            .then(function(buffer) {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
+            });
+        }        
+        (function() {
+            const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_outlineLevel'), {
+                columns: [
+                    { dataField: "f1", groupIndex: 0 },
+                    { dataField: "f2", groupIndex: 1 },
+                    { dataField: "f3" },
+                ],
+                showColumnHeaders: true,
+                dataSource: [
+                    { f1: "f1", f2: "f2", f3: "f3_1" },
+                    { f1: "f1", f2: "f2", f3: "f3_2" }
+                ],
+                export: {
+                    enabled: true,
+                },
+            });
+
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_outlineLevel'), {
+                text: 'Export',
+                onClick: e => exportGroupRows(dxDataGrid)
+            });
+        })();
+    </script>
+
+    <hr/><br/>
+    <div class="ExportToExcel_outlineLevel2"></div>
+    <div class="jsdxDataGrid_outlineLevel2">Loading....</div>
+    <script>
+        async function exportGroupRows2(dxDataGrid) {
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('sheet 42');
+
+            worksheet.properties.outlineProperties = {
+                summaryBelow: false,
+                summaryRight: false,
+            };
+
+            const columns = dxDataGrid.getVisibleColumns();
+            const headerRow = worksheet.addRow();
+            headerRow.getCell(1).value = 'F3';
+
+            const groupRow1 = worksheet.addRow();
+            groupRow1.getCell(1).value = 'F1: f1';
+
+            const groupRow2 = worksheet.addRow();
+            groupRow2.outlineLevel = 1;
+            groupRow2.getCell(1).value = 'F2: f2';
+
+            const dataRow1 = worksheet.addRow();
+            dataRow1.outlineLevel = 2;
+            dataRow1.getCell(1).value = 'f3_1';
+            const dataRow2 = worksheet.addRow();
+            dataRow2.outlineLevel = 2;
+            dataRow2.getCell(1).value = 'f3_2';
+
+            workbook.xlsx.writeBuffer()
+            .then(function(buffer) {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
+            });
+        }        
+        (function() {
+            const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_outlineLevel2'), {
+                columns: [
+                    { dataField: "f1", groupIndex: 0 },
+                    { dataField: "f2", groupIndex: 1 },
+                    { dataField: "f3" },
+                ],
+                showColumnHeaders: true,
+                dataSource: [
+                    { f1: "f1", f2: "f2", f3: "f3_1" },
+                    { f1: "f1", f2: "f2", f3: "f3_2" }
+                ],
+                export: {
+                    enabled: true,
+                },
+            });
+
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_outlineLevel2'), {
+                text: 'Export groupping v2',
+                onClick: e => exportGroupRows2(dxDataGrid)
+            });
+        })();
+    </script>    
 </body>
 </html> 
