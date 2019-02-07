@@ -389,6 +389,75 @@
                 onClick: e => exportGroupRows2(dxDataGrid)
             });
         })();
-    </script>    
+    </script>
+
+    <hr/><br/>
+    <div class="loadPanel"></div>
+    <div class="ExportToExcel_progress"></div>
+    <script>
+        function export_progress() {
+            console.log(" export_progress");
+            const workbook = new ExcelJS.Workbook();
+
+            return new Promise(resolve => {
+                console.log("> generate cells");
+                const worksheet = workbook.addWorksheet('sheet 42');
+                for(let i = 0; i < 20000; i++) {
+                    const dataRow = worksheet.addRow();
+                    for(let j = 0; j < 50; j++) {
+                        dataRow.getCell(j + 1).value = (i + j);
+                    }
+                }
+                console.log("< generate cells");
+                resolve();
+            }).then(() => {
+                console.log("writeBuffer");
+                return workbook.xlsx.writeBuffer();
+            }).then((buffer) => {
+                return new Promise(resolve => {
+                    console.log(">saveAs");
+                    saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
+                    console.log("<saveAs");
+                    resolve();
+                });
+            });
+        }
+
+        (function() {
+            var loadPanel = new DevExpress.ui.dxLoadPanel(document.querySelector(".loadPanel"), {
+                shadingColor: "rgba(0,0,0,0.4)",
+                position: "center",
+                visible: false,
+                showIndicator: true,
+                showPane: true,
+                shading: true,
+                closeOnOutsideClick: false,
+                onShown: function(){
+                    console.log("onShown");
+                },
+                onHidden: function(){
+                    console.log("onHidden");
+                } 
+            });
+
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_progress'), {
+                text: 'Export Progress',
+                onClick: e => {
+                    console.log("loadPanel.show");
+                    loadPanel.show().
+                    then(() => {
+                        return export_progress();
+                    }).
+                    then(() => {
+                        console.log("loadPanel.hide");
+                        return loadPanel.hide();
+                    }).
+                    then(() => {
+                        console.log("the end");
+                    });
+                }
+            });
+        })();
+    </script>
 </body>
 </html> 
