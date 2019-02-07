@@ -20,6 +20,37 @@
         window.ObjectAssign.polyfill(); //https://www.npmjs.com/package/es6-object-assign
     </script>
 
+    <hr/><br/>
+    <div class="exportSimpleTable"></div>
+    <div>Click the button....</div>
+    <script>
+        function exportSimpleTable() {
+            var i, j, dataRow,
+                workbook = new ExcelJS.Workbook(),
+                worksheet = workbook.addWorksheet('sheet 42');
+
+            for(i = 0; i < 100; i++) {
+                dataRow = worksheet.addRow();
+                for(j = 0; j < 50; j++) {
+                    dataRow.getCell(j + 1).value = (i + j);
+                }
+            }
+
+            workbook.xlsx.writeBuffer()
+            .then(function(buffer) {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
+            });
+        }
+
+        (function() {
+            new DevExpress.ui.dxButton(document.querySelector('.exportSimpleTable'), {
+                text: 'Export Simple Table',
+                onClick: function() { exportSimpleTable(); }
+            });
+        })();
+    </script>
+
+    <hr/><br/>
     <script>
         function ExportToExcel(dxDataGrid, saveMode) {
             var i, j, cell;
