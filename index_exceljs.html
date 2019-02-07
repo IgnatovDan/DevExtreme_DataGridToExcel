@@ -5,6 +5,9 @@
 
     <link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/18.2.5/css/dx.common.css" />
     <link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/18.2.5/css/dx.light.css" />
+    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/es6-object-assign@1.1.0/dist/object-assign.js"></script>    
+    
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>    
     <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/18.2.5/js/dx.all.debug.js"></script>
 
@@ -14,102 +17,111 @@
 </head>
 <body>
     <script>
-        async function ExportToExcel(dxDataGrid, saveMode) {
+        window.ObjectAssign.polyfill(); //https://www.npmjs.com/package/es6-object-assign
+    </script>
+
+    <script>
+        function ExportToExcel(dxDataGrid, saveMode) {
+            var i, j, cell;
+
             performance.clearMarks();
             performance.clearMeasures();
             performance.mark("ExportToExcel start");
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('sheet 42');
-            const columns = dxDataGrid.getVisibleColumns();
-            const headerRow = worksheet.addRow();
-            for(let i = 0; i < columns.length; i++) {
-                const cell = headerRow.getCell(i + 1);
+            var workbook = new ExcelJS.Workbook();
+            var worksheet = workbook.addWorksheet('sheet 42');
+            var columns = dxDataGrid.getVisibleColumns();
+            var headerRow = worksheet.addRow();
+            for(i = 0; i < columns.length; i++) {
+                cell = headerRow.getCell(i + 1);
                 cell.value = columns[i].caption;
                 cell.font = cell.font || {};
                 cell.font.bold = true;
             }
 
             performance.mark("loadAll start");
-            const sourceItems = await dxDataGrid.getController("data").loadAll();
-            performance.mark("loadAll end");
-            performance.measure("loadAll", "loadAll start", "loadAll end");
-            console.log("loadAll: " + performance.getEntriesByName("loadAll")[0].duration);
+            dxDataGrid.getController("data").loadAll().
+            then(function(sourceItems) {
+                //var sourceItems = await dxDataGrid.getController("data").loadAll();
+                performance.mark("loadAll end");
+                performance.measure("loadAll", "loadAll start", "loadAll end");
+                console.log("loadAll: " + performance.getEntriesByName("loadAll")[0].duration);
 
-            performance.mark("createCells start");
-            for(let i = 0; i < sourceItems.length; i++) {
-                const dataRow = worksheet.addRow();
-                for(let j = 0; j < sourceItems[i].values.length; j++) {
-                    const cell = dataRow.getCell(j + 1);
-                    cell.value = sourceItems[i].values[j];
+                performance.mark("createCells start");
+                for(i = 0; i < sourceItems.length; i++) {
+                    var dataRow = worksheet.addRow();
+                    for(j = 0; j < sourceItems[i].values.length; j++) {
+                        cell = dataRow.getCell(j + 1);
+                        cell.value = sourceItems[i].values[j];
 
-                    /*if(typeof cell.value === "string") {
-                        cell.value = Number(cell.value);
-                    } else {
-                        cell.value = String(cell.value);
-                    }*/
+                        /*if(typeof cell.value === "string") {
+                            cell.value = Number(cell.value);
+                        } else {
+                            cell.value = String(cell.value);
+                        }*/
 
-                    if((i + j) % 5 === 0) {
-                        cell.font = cell.font || {};
-                        cell.font.underline = true;
-                    }                    
-                    if((i + j) % 7 === 0) {
-                        cell.font = cell.font || {};
-                        cell.font.bold = true;
-                    }
-                    if((i + j) % 11 === 0) {
-                        cell.font = cell.font || {};
-                        cell.font.italic = true;
-                    }
+                        /*if((i + j) % 5 === 0) {
+                            cell.font = cell.font || {};
+                            cell.font.underline = true;
+                        }                    
+                        if((i + j) % 7 === 0) {
+                            cell.font = cell.font || {};
+                            cell.font.bold = true;
+                        }
+                        if((i + j) % 11 === 0) {
+                            cell.font = cell.font || {};
+                            cell.font.italic = true;
+                        }
 
-                    cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
-                    if((i + j) % 13 === 0) {
-                        cell.fill = cell.fill || {};
-                        cell.fill ={
-                            type: 'pattern',
-                            pattern: 'solid',
-                            fgColor: { argb:'FF' + (i+j)%99 + i%99 + '00' }
-                        };
+                        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+                        if((i + j) % 13 === 0) {
+                            cell.fill = cell.fill || {};
+                            cell.fill ={
+                                type: 'pattern',
+                                pattern: 'solid',
+                                fgColor: { argb:'FF' + (i+j)%99 + i%99 + '00' }
+                            };
+                        }*/
                     }
                 }
-            }
 
-            performance.mark("createCells end");
-            performance.measure("createCells", "createCells start", "createCells end");
-            console.log("createCells: " + performance.getEntriesByName("createCells")[0].duration);
+                performance.mark("createCells end");
+                performance.measure("createCells", "createCells start", "createCells end");
+                console.log("createCells: " + performance.getEntriesByName("createCells")[0].duration);
 
-            if(saveMode === 'FileSaver') {
-                performance.mark("writeBuffer start");
-                workbook.xlsx.writeBuffer()
-                .then(function(buffer) {
-                    performance.mark("writeBuffer end");
-                    performance.measure("writeBuffer", "writeBuffer start", "writeBuffer end");
-                    console.log("writeBuffer: " + performance.getEntriesByName("writeBuffer")[0].duration);
+                if(saveMode === 'FileSaver') {
+                    performance.mark("writeBuffer start");
+                    workbook.xlsx.writeBuffer()
+                    .then(function(buffer) {
+                        performance.mark("writeBuffer end");
+                        performance.measure("writeBuffer", "writeBuffer start", "writeBuffer end");
+                        console.log("writeBuffer: " + performance.getEntriesByName("writeBuffer")[0].duration);
 
-                    performance.mark("saveAs start");
-                    saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
-                    performance.mark("saveAs end");
-                    performance.measure("saveAs", "saveAs start", "saveAs end");
-                    console.log("saveAs: " + performance.getEntriesByName("saveAs")[0].duration);
+                        performance.mark("saveAs start");
+                        saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
+                        performance.mark("saveAs end");
+                        performance.measure("saveAs", "saveAs start", "saveAs end");
+                        console.log("saveAs: " + performance.getEntriesByName("saveAs")[0].duration);
 
-                    performance.mark("ExportToExcel end");
-                    performance.measure("ExportToExcel", "ExportToExcel start", "ExportToExcel end");
+                        performance.mark("ExportToExcel end");
+                        performance.measure("ExportToExcel", "ExportToExcel start", "ExportToExcel end");
 
-                    console.log("ExportToExcel: " + performance.getEntriesByName("ExportToExcel")[0].duration);
-                });
-            }
-            else {
-                workbook.xlsx.writeBuffer()
-                .then(function(buffer) {
-                    //const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-                    const blob = new Blob([buffer], { type: 'application/octet-stream' });
-                    const url = window.URL.createObjectURL(blob);
-                    const anchor = document.createElement('a');
-                    anchor.href = url;
-                    anchor.download = 'test.xlsx';
-                    anchor.click();
-                    window.URL.revokeObjectURL(url);
-                });
-            }
+                        console.log("ExportToExcel: " + performance.getEntriesByName("ExportToExcel")[0].duration);
+                    });
+                }
+                else {
+                    workbook.xlsx.writeBuffer()
+                    .then(function(buffer) {
+                        //const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        var blob = new Blob([buffer], { type: 'application/octet-stream' });
+                        var url = window.URL.createObjectURL(blob);
+                        var anchor = document.createElement('a');
+                        anchor.href = url;
+                        anchor.download = 'test.xlsx';
+                        anchor.click();
+                        window.URL.revokeObjectURL(url);
+                    });
+                }
+            });
         }
     </script>
 
@@ -118,7 +130,7 @@
     <div class="jsdxDataGrid">Loading....</div>
     <script>
         (function() {
-            const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid'), {
+            var dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid'), {
                 columns: [
                     { dataField: "f1", width: 100 },
                     { dataField: "f2", width: 50 },
@@ -133,10 +145,10 @@
                 export: {
                     enabled: true,
                 },
-                onExporting: () => {
+                onExporting: function() {
                     performance.mark("dxDataGrid_Export start");
                 },
-                onExported: () => {
+                onExported: function() {
                     performance.mark("dxDataGrid_Export end");
                     performance.measure("dxDataGrid_Export", "dxDataGrid_Export start", "dxDataGrid_Export end");
                     console.log("dxDataGrid_Export: " + performance.getEntriesByName("dxDataGrid_Export")[0].duration);
@@ -145,11 +157,11 @@
 
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_FileSaver'), {
                 text: 'ExportToExcel_FileSaver',
-                onClick: e => ExportToExcel(dxDataGrid, 'FileSaver')
+                onClick: function() { ExportToExcel(dxDataGrid, 'FileSaver'); }
             });
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_AnchorClick'), {
                 text: 'ExportToExcel_AnchorClick',
-                onClick: e => ExportToExcel(dxDataGrid, 'Anchor')
+                onClick: function() { ExportToExcel(dxDataGrid, 'Anchor'); }
             });
         })();
     </script>
@@ -159,17 +171,17 @@
     <div class="jsdxDataGrid_performance">Loading....</div>
     <script>
         function getColumns() {
-            let result = [];
-            for(let i = 0; i < 50; i++) {
+            var i, result = [];
+            for(i = 0; i < 50; i++) {
                 result[i] = "f" + i;
             }
             return result;
         }
         function getDataSource() {
-            let result = [];
-            for(let i = 0; i < 20000; i++) {
+            var i, j, result = [];
+            for(i = 0; i < 200; i++) {
                 result[i] = {};
-                for(let j = 0; j < 50; j++) {
+                for(j = 0; j < 50; j++) {
                     if((i + j) % 3 === 0) {
                         result[i]["f" + j] = "row " + i + " cell " + j;
                     }
@@ -181,17 +193,17 @@
             return result;
         }
         (function() {
-            const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_performance'), {
+            var dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_performance'), {
                 columns: getColumns(),
                 showColumnHeaders: true,
                 dataSource: getDataSource(),
                 export: {
                     enabled: true,
                 },
-                onExporting: () => {
+                onExporting: function() {
                     performance.mark("dxDataGrid_Export start");
                 },
-                onExported: () => {
+                onExported: function() {
                     performance.mark("dxDataGrid_Export end");
                     performance.measure("dxDataGrid_Export", "dxDataGrid_Export start", "dxDataGrid_Export end");
                     console.log("dxDataGrid_Export: " + performance.getEntriesByName("dxDataGrid_Export")[0].duration);
@@ -200,7 +212,7 @@
 
             new DevExpress.ui.dxButton(document.querySelector('.jsdxDataGrid_performance_export'), {
                 text: 'Export',
-                onClick: e => ExportToExcel(dxDataGrid, 'FileSaver')
+                onClick: function() { ExportToExcel(dxDataGrid, 'FileSaver'); }
             });
         })();
     </script>
@@ -210,7 +222,7 @@
     <div class="jsdxDataGrid_valueTypes">Loading....</div>
     <script>
         (function() {
-            const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_valueTypes'), {
+            var dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_valueTypes'), {
                 columns: [
                     { dataField: "f1", dataType: "string" },
                     { dataField: "f2", dataType: "number" },
@@ -232,7 +244,7 @@
 
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_valueTypes'), {
                 text: 'Export',
-                onClick: e => ExportToExcel(dxDataGrid, 'FileSaver')
+                onClick: function() { ExportToExcel(dxDataGrid, 'FileSaver'); }
             });
         })();
     </script>
@@ -242,14 +254,15 @@
     <div class="jsdxDataGrid_randomCells">Click the button....</div>
     <script>
         function randomExcelCells() {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('sheet 42');
+            var workbook = new ExcelJS.Workbook();
+            var worksheet = workbook.addWorksheet('sheet 42');
+            var i, j, cell;
 
-            for(let i = 0; i < 1000; i++) {
-                const dataRow = worksheet.addRow();
-                for(let j = 0; j < 50; j++) {
+            for(i = 0; i < 100; i++) {
+                var dataRow = worksheet.addRow();
+                for(j = 0; j < 50; j++) {
                     if((i + j) % 27 === 0) {
-                        const cell = dataRow.getCell(j + 1);
+                        cell = dataRow.getCell(j + 1);
                         cell.value = (i + j);
                     }
                 }
@@ -264,7 +277,7 @@
         (function() {
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_randomCells'), {
                 text: 'Export',
-                onClick: e => randomExcelCells()
+                onClick: function() { randomExcelCells(); }
             });
         })();
     </script>
@@ -273,32 +286,32 @@
     <div class="ExportToExcel_outlineLevel"></div>
     <div class="jsdxDataGrid_outlineLevel">Loading....</div>
     <script>
-        async function exportGroupRows(dxDataGrid) {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('sheet 42');
+        function exportGroupRows(dxDataGrid) {
+            var workbook = new ExcelJS.Workbook();
+            var worksheet = workbook.addWorksheet('sheet 42');
 
             worksheet.properties.outlineProperties = {
                 summaryBelow: false,
                 summaryRight: false,
             };
 
-            const columns = dxDataGrid.getVisibleColumns();
-            const headerRow = worksheet.addRow();
+            var columns = dxDataGrid.getVisibleColumns();
+            var headerRow = worksheet.addRow();
             headerRow.getCell(1).value = 'F1';
             headerRow.getCell(2).value = 'F2';
             headerRow.getCell(3).value = 'F3';
 
-            const groupRow1 = worksheet.addRow();
+            var groupRow1 = worksheet.addRow();
             groupRow1.getCell(1).value = 'f1';
 
-            const groupRow2 = worksheet.addRow();
+            var groupRow2 = worksheet.addRow();
             groupRow2.outlineLevel = 1;
             groupRow2.getCell(2).value = 'f2';
 
-            const dataRow1 = worksheet.addRow();
+            var dataRow1 = worksheet.addRow();
             dataRow1.outlineLevel = 2;
             dataRow1.getCell(3).value = 'f3_1';
-            const dataRow2 = worksheet.addRow();
+            var dataRow2 = worksheet.addRow();
             dataRow2.outlineLevel = 2;
             dataRow2.getCell(3).value = 'f3_2';
 
@@ -308,7 +321,7 @@
             });
         }        
         (function() {
-            const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_outlineLevel'), {
+            var dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_outlineLevel'), {
                 columns: [
                     { dataField: "f1", groupIndex: 0 },
                     { dataField: "f2", groupIndex: 1 },
@@ -326,7 +339,7 @@
 
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_outlineLevel'), {
                 text: 'Export',
-                onClick: e => exportGroupRows(dxDataGrid)
+                onClick: function() { exportGroupRows(dxDataGrid); }
             });
         })();
     </script>
@@ -335,30 +348,30 @@
     <div class="ExportToExcel_outlineLevel2"></div>
     <div class="jsdxDataGrid_outlineLevel2">Loading....</div>
     <script>
-        async function exportGroupRows2(dxDataGrid) {
-            const workbook = new ExcelJS.Workbook();
-            const worksheet = workbook.addWorksheet('sheet 42');
+        function exportGroupRows2(dxDataGrid) {
+            var workbook = new ExcelJS.Workbook();
+            var worksheet = workbook.addWorksheet('sheet 42');
 
             worksheet.properties.outlineProperties = {
                 summaryBelow: false,
                 summaryRight: false,
             };
 
-            const columns = dxDataGrid.getVisibleColumns();
-            const headerRow = worksheet.addRow();
+            var columns = dxDataGrid.getVisibleColumns();
+            var headerRow = worksheet.addRow();
             headerRow.getCell(1).value = 'F3';
 
-            const groupRow1 = worksheet.addRow();
+            var groupRow1 = worksheet.addRow();
             groupRow1.getCell(1).value = 'F1: f1';
 
-            const groupRow2 = worksheet.addRow();
+            var groupRow2 = worksheet.addRow();
             groupRow2.outlineLevel = 1;
             groupRow2.getCell(1).value = 'F2: f2';
 
-            const dataRow1 = worksheet.addRow();
+            var dataRow1 = worksheet.addRow();
             dataRow1.outlineLevel = 2;
             dataRow1.getCell(1).value = 'f3_1';
-            const dataRow2 = worksheet.addRow();
+            var dataRow2 = worksheet.addRow();
             dataRow2.outlineLevel = 2;
             dataRow2.getCell(1).value = 'f3_2';
 
@@ -368,7 +381,7 @@
             });
         }        
         (function() {
-            const dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_outlineLevel2'), {
+            var dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_outlineLevel2'), {
                 columns: [
                     { dataField: "f1", groupIndex: 0 },
                     { dataField: "f2", groupIndex: 1 },
@@ -386,7 +399,7 @@
 
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_outlineLevel2'), {
                 text: 'Export groupping v2',
-                onClick: e => exportGroupRows2(dxDataGrid)
+                onClick: function() { exportGroupRows2(dxDataGrid); }
             });
         })();
     </script>
@@ -397,24 +410,25 @@
     <script>
         function export_progress() {
             console.log(" export_progress");
-            const workbook = new ExcelJS.Workbook();
+            var workbook = new ExcelJS.Workbook();
+            var i, j;
 
-            return new Promise(resolve => {
+            return new Promise(function(resolve) {
                 console.log("> generate cells");
-                const worksheet = workbook.addWorksheet('sheet 42');
-                for(let i = 0; i < 20000; i++) {
-                    const dataRow = worksheet.addRow();
-                    for(let j = 0; j < 50; j++) {
+                var worksheet = workbook.addWorksheet('sheet 42');
+                for(i = 0; i < 200; i++) {
+                    var dataRow = worksheet.addRow();
+                    for(j = 0; j < 50; j++) {
                         dataRow.getCell(j + 1).value = (i + j);
                     }
                 }
                 console.log("< generate cells");
                 resolve();
-            }).then(() => {
+            }).then(function() {
                 console.log("writeBuffer");
                 return workbook.xlsx.writeBuffer();
-            }).then((buffer) => {
-                return new Promise(resolve => {
+            }).then(function(buffer) {
+                return new Promise(function(resolve) {
                     console.log(">saveAs");
                     saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
                     console.log("<saveAs");
@@ -442,17 +456,17 @@
 
             new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_progress'), {
                 text: 'Export Progress',
-                onClick: e => {
+                onClick: function() {
                     console.log("loadPanel.show");
                     loadPanel.show().
-                    then(() => {
+                    then(function() {
                         return export_progress();
                     }).
-                    then(() => {
+                    then(function() {
                         console.log("loadPanel.hide");
                         return loadPanel.hide();
                     }).
-                    then(() => {
+                    then(function() {
                         console.log("the end");
                     });
                 }
