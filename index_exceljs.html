@@ -606,5 +606,29 @@
             });
         })();
     </script>
+
+    <hr/><br/>
+    <div class="ExportToExcel_SharedStrings"></div>
+    <div class="jsdxDataGrid_SharedStrings">Loading....</div>
+    <script>
+        function exportSharedStrings() {
+            var workbook = new ExcelJS.Workbook();
+            var worksheet = workbook.addWorksheet('sheet 42');
+
+            for(let i = 0; i < 100; i++) {
+                worksheet.getCell(1, i + 1).value = "some long string";
+            }
+            workbook.xlsx.writeBuffer()
+            .then(function(buffer) {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
+            });
+        }        
+        (function() {
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_SharedStrings'), {
+                text: 'Export XML tags',
+                onClick: function() { exportSharedStrings(); }
+            });
+        })();
+    </script>
 </body>
 </html> 
