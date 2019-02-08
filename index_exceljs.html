@@ -13,6 +13,7 @@
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/1.6.3/exceljs.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+    <script type="text/javascript" src="index_exceljs.js"></script>
 
 </head>
 <body>
@@ -538,6 +539,7 @@
                 saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
             });
         }        
+        debugger;
         (function() {
             var dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_bands'), {
                 columns: [
@@ -561,6 +563,48 @@
                 onClick: function() { exportBands(dxDataGrid); }
             });
         })();
-    </script>    
+    </script>
+
+    <hr/><br/>
+    <div class="ExportToExcel_XmlTags"></div>
+    <div class="jsdxDataGrid_XmlTags">Loading....</div>
+    <script>
+        function exportXmlTags(dxDataGrid) {
+            var workbook = new ExcelJS.Workbook();
+            var worksheet = workbook.addWorksheet('sheet 42');
+
+            var headerRow1 = worksheet.addRow();
+            headerRow1.getCell(1).value = 'F1';
+            
+            worksheet.getCell(2, 1).value = xmlTagsDataSource[0].f1; // saved as <t>&lt;script&gt;alert(&quot;hi&quot;)&lt;/script&gt;</t>
+            
+            worksheet.getCell(2, 1).numFmt = xmlTagsDataSource[0].f1; // saved as formatCode="&lt;script&gt;alert(&quot;hi&quot;)&lt;/script&gt;"
+
+            workbook.xlsx.writeBuffer()
+            .then(function(buffer) {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
+            });
+        }        
+        (function() {
+            
+            var dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_XmlTags'), {
+                columns: [
+                    { dataField: "f1", dataType: "string" },
+                ],
+                dataSource: xmlTagsDataSource, 
+                export: {
+                    enabled: true,
+                    customizeExcelCell: (e) => {
+                        e.numberFormat = xmlTagsDataSource[0].f1;
+                    }
+                },
+            });
+
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_XmlTags'), {
+                text: 'Export XML tags',
+                onClick: function() { exportXmlTags(dxDataGrid); }
+            });
+        })();
+    </script>
 </body>
 </html> 
