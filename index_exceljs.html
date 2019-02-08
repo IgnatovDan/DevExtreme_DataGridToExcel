@@ -659,5 +659,33 @@
             });
         })();
     </script>
+
+    <hr/><br/>
+    <div class="ExportToExcel_Formulas"></div>
+    <script>
+        function exportSeveralSheets() {
+            var workbook = new ExcelJS.Workbook();
+            var worksheet = workbook.addWorksheet('sheet 1');
+
+            var result = 0;
+            for(let i = 0; i < 10; i++) {
+                worksheet.getCell(i + 1, 1).value = i + 1;
+                result += worksheet.getCell(i + 1, 1).value;
+            }
+
+            worksheet.getCell(11, 1).value = { formula: "SUM(A1:A10)", result: result };
+
+            workbook.xlsx.writeBuffer()
+            .then(function(buffer) {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
+            });
+        }        
+        (function() {
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_Formulas'), {
+                text: 'Export Formula',
+                onClick: function() { exportSeveralSheets(); }
+            });
+        })();
+    </script>
 </body>
 </html> 
