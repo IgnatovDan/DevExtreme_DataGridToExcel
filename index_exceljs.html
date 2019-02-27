@@ -211,7 +211,7 @@
         }
         function getDataSource() {
             var i, j, result = [];
-            for(i = 0; i < 200; i++) {
+            for(i = 0; i < 20000; i++) {
                 result[i] = {};
                 for(j = 0; j < 50; j++) {
                     if((i + j) % 3 === 0) {
@@ -539,7 +539,7 @@
                 saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
             });
         }        
-        debugger;
+
         (function() {
             var dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_bands'), {
                 columns: [
@@ -686,6 +686,148 @@
                 onClick: function() { exportSeveralSheets(); }
             });
         })();
+    </script>
+
+    <hr/><br/>
+    <div class="ExportToExcel_Performance"></div>
+    <div class="jsdxDataGrid_Performance">Loading....</div>
+    <script>
+        var dataSource = [];
+        for(var i = 0; i < 20000; i++) {
+            dataSource[i] = {};
+            for(var j = 0; j < 50; j++) {
+                dataSource[i]["f" + j] = i + j;
+            }
+        }
+
+        function ExportToExcel() {
+            var i, j, cell;
+
+            performance.clearMarks();
+            performance.clearMeasures();
+            performance.mark("ExportToExcel start");
+            var workbook = new ExcelJS.Workbook();
+            var worksheet = workbook.addWorksheet('sheet 42');
+            var headerRow = worksheet.addRow();
+            var border = {
+                top: {style:'thin'},
+                left: {style:'thin'},
+                bottom: {style:'thin'},
+                right: {style:'thin'}
+            };
+
+            var properties = Object.keys(dataSource[0]);
+            for(i = 0; i < properties.length; i++) {
+                cell = headerRow.getCell(i + 1);
+                cell.value = "F" + i;
+                cell.font = cell.font || {};
+                cell.font.bold = true;
+                cell.border = border;
+            }
+
+            for(i = 0; i < dataSource.length; i++) {
+                var dataRow = worksheet.addRow();
+                for(j = 0; j < properties.length; j++) {
+                    cell = dataRow.getCell(j + 1);
+                    cell.value = dataSource[i][properties[j]];
+                    cell.border = border;
+
+                    if(cell.value % 5 === 0) {
+                        cell.font = cell.font || {};
+                        cell.font.underline = true;
+                    }                    
+                    if(cell.value % 7 === 0) {
+                        cell.font = cell.font || {};
+                        cell.font.bold = true;
+                    }
+                    if(cell.value % 11 === 0) {
+                        cell.font = cell.font || {};
+                        cell.font.italic = true;
+                    }
+
+                    var color = cell.value % 99;
+                    if(color > 9) {
+                        if(cell.value % 9 === 0) {
+                            cell.fill = cell.fill || {};
+                            cell.fill ={
+                                type: 'pattern',
+                                pattern: 'solid',
+                                fgColor: { argb:'FFFF' + color + 'FF' }
+                            };
+                        }
+                        if(cell.value % 13 === 0) {
+                            cell.fill = cell.fill || {};
+                            cell.fill ={
+                                type: 'pattern',
+                                pattern: 'solid',
+                                fgColor: { argb:'FF' + color + 'FF00' }
+                            };
+                        }
+                    }
+                }
+            }
+
+            workbook.xlsx.writeBuffer()
+            .then(function(buffer) {
+                saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'test.xlsx');
+
+                performance.mark("ExportToExcel end");
+                performance.measure("ExportToExcel", "ExportToExcel start", "ExportToExcel end");
+                console.log("ExportToExcel: " + performance.getEntriesByName("ExportToExcel")[0].duration);
+            });
+
+        }
+
+        (function() {
+            var dxDataGrid = new DevExpress.ui.dxDataGrid(document.querySelector('.jsdxDataGrid_Performance'), {
+                showColumnHeaders: true,
+                dataSource: dataSource,
+                export: {
+                    enabled: true,
+                    customizeExcelCell: function(e) {
+                        if(e.gridCell !== null && e.gridCell.rowType === "data") {
+                            if(e.gridCell.value % 5 === 0) {
+                                e.font = e.font || {};
+                                e.font.underline = "single";
+                            }                    
+                            if(e.gridCell.value % 7 === 0) {
+                                e.font = e.font || {};
+                                e.font.bold = true;
+                            }
+                            if(e.gridCell.value % 11 === 0) {
+                                e.font = e.font || {};
+                                e.font.italic = true;
+                            }
+
+                            var color = e.gridCell.value % 99;
+                            if(color > 9) {
+                                if(e.gridCell.value % 9 === 0) {
+                                    e.backgroundColor = '#FF' + color + 'FF';
+                                }
+                                if(e.gridCell.value % 13 === 0) {
+                                    e.backgroundColor = "#" + color + 'FF00';
+                                }
+                            }
+                        }
+                    }
+                },
+                onExporting: function() {
+                    performance.clearMarks();
+                    performance.clearMeasures();
+                    performance.mark("dxDataGrid_Export start");
+                },
+                onExported: function() {
+                    performance.mark("dxDataGrid_Export end");
+                    performance.measure("dxDataGrid_Export", "dxDataGrid_Export start", "dxDataGrid_Export end");
+                    console.log("dxDataGrid_Export: " + performance.getEntriesByName("dxDataGrid_Export")[0].duration);
+                },
+            });
+
+            new DevExpress.ui.dxButton(document.querySelector('.ExportToExcel_Performance'), {
+                text: 'ExportToExcel Performance',
+                onClick: function() { ExportToExcel(dxDataGrid, 'FileSaver'); }
+            });
+        })();    
     </script>
 </body>
 </html> 
