@@ -1,4 +1,4 @@
-function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xlsx", topLeftCell = { row: 1 /*1-based*/, column: 1 /*1-based*/ } }) {
+function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xlsx", topLeftCell = { row: 1 /*1-based*/, column: 1 /*1-based*/ }, saveEnabled = true }) {
     if (!dataGrid) {
         throw "Incorrect arguments: 'dataGrid' is null";
     }
@@ -6,6 +6,10 @@ function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xl
         workbook = new ExcelJS.Workbook();
         worksheet = workbook.addWorksheet('Sheet 1');
     }
+    if(saveEnabled && !workbook) {
+        throw "Incorrect arguments: 'workbook' is null when 'saveEnabled' is true";
+    }
+
     var result = { from: { ...topLeftCell }, to: { ...topLeftCell } };
 
     var currentColumnIndex = result.from.column;
@@ -31,7 +35,7 @@ function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xl
             result.to.row--;
             return Promise.resolve(result);
         }).then(function () {
-            if (workbook) {
+            if(saveEnabled && workbook) {
                 return workbook.xlsx.writeBuffer().then(function (buffer) {
                     var localFileName = fileName || "DataGrid.xlsx";
                     if (localFileName.substring(localFileName.length - ".xlsx".length, localFileName.length) !== ".xlsx") {
