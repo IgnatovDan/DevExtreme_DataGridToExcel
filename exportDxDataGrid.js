@@ -1,4 +1,6 @@
-function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xlsx", topLeftCell = { row: 1 /*1-based*/, column: 1 /*1-based*/ }, saveEnabled = true }) {
+function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xlsx", 
+                         topLeftCell = { row: 1 /*1-based*/, column: 1 /*1-based*/ },
+                         saveEnabled = true, customizeCell }) {
     if (!dataGrid) {
         throw "Incorrect arguments: 'dataGrid' is null";
     }
@@ -16,6 +18,14 @@ function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xl
     var headerRow = worksheet.getRow(result.to.row);
     for (let i = 0; i < dataGrid.getVisibleColumns().length; i++) {
         headerRow.getCell(currentColumnIndex).value = dataGrid.getVisibleColumns()[i].caption;
+        customizeCell && customizeCell({
+            dataGrid,
+            cell: headerRow.getCell(currentColumnIndex),
+            gridCell: {
+                rowType: "header",
+                // TODO: column, data, groupSummaryItems, totalSummaryItemName, value
+            }
+        });
         currentColumnIndex++;
     }
     result.to.row++;
@@ -28,6 +38,14 @@ function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xl
                 currentColumnIndex = result.from.column;
                 for (let j = 0; j < items[i].values.length; j++) {
                     dataRow.getCell(currentColumnIndex).value = items[i].values[j];
+                    customizeCell && customizeCell({
+                        dataGrid,
+                        cell: headerRow.getCell(currentColumnIndex),
+                        gridCell: {
+                            rowType: "data",
+                            // TODO: column, data, groupSummaryItems, totalSummaryItemName, value
+                        }
+                    });
                     currentColumnIndex++;
                 }
                 result.to.row++;
