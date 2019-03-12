@@ -1,8 +1,7 @@
-function exportDataGrid({ dataGrid, worksheet, fileName = "DataGrid.xlsx", topLeftCell = { row: 1 /*1-based*/, column: 1 /*1-based*/ } }) {
+function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xlsx", topLeftCell = { row: 1 /*1-based*/, column: 1 /*1-based*/ } }) {
     if (!dataGrid) {
         throw "Incorrect arguments: 'dataGrid' is null";
     }
-    var workbook;
     if (!worksheet) {
         workbook = new ExcelJS.Workbook();
         worksheet = workbook.addWorksheet('Sheet 1');
