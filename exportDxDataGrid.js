@@ -44,3 +44,6 @@ function exportDataGrid({ dataGrid, worksheet, topLeftCell = { row: 1 /*1-based*
         }
       });
   }
+
+  window.exportDataGrid = exportDataGrid;
+  
