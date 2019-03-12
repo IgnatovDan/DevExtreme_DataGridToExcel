@@ -52,7 +52,7 @@ function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xl
             }
             result.to.row--;
             return Promise.resolve(result);
-        }).then(function () {
+        }).then(function(range) {
             if(saveEnabled && workbook) {
                 return workbook.xlsx.writeBuffer().then(function (buffer) {
                     var localFileName = fileName || "DataGrid.xlsx";
@@ -65,7 +65,7 @@ function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xl
                     );
                 });
             } else {
-                return Promise.resolve();
+                return Promise.resolve(range);
             }
         });
 }
