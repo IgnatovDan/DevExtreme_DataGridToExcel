@@ -35,7 +35,7 @@ function exportDataGrid({ dataGrid, worksheet, fileName = "DataGrid.xlsx", topLe
             if (workbook) {
                 return workbook.xlsx.writeBuffer().then(function (buffer) {
                     var localFileName = fileName || "DataGrid.xlsx";
-                    if (this.substring(localFileName.length - ".xlsx".length, localFileName.length) !== ".xlsx") {
+                    if (localFileName.substring(localFileName.length - ".xlsx".length, localFileName.length) !== ".xlsx") {
                         localFileName += ".xlsx";
                     }
                     saveAs(
