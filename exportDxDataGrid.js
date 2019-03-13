@@ -4,39 +4,46 @@
 
 /// <param name="dataGrid">
 /// A dxDataGrid widget.
+/// Required parameter.
 /// </param>
 
 /// <param name="workbook">
-/// A workbook object. Optional parameter. Pass a workbook object if you created it in your code and want to automatically generate and save the XLSX file.
+/// A workbook object.
+/// Optional parameter. A new ExcelJS workbook object will be created in the 'workbook' object if its value is null/undefined. The ExcelJS worksheet object will be created as well. Note that in this case it is not possible to customize the created objects and not possible to generate and save the XLSX file manually.
+/// Pass a workbook object if you created it in your code and want to automatically generate and save the XLSX file.
 /// See https://github.com/exceljs/exceljs#create-a-workbook for more details.
 /// </param>
 
 /// <param name="worksheet">
-/// A worksheet object. Optional parameter. Pass a workbook object if you created it in your code and want to automatically generate and save the XLSX file.
+/// A worksheet object. Pass a workbook object if you created it in your code and want to automatically generate and save the XLSX file.
+/// Optional parameter. A new ExcelJS worksheet object will be created in the 'workbook' object if its value is null/undefined. Note that in this case it is not possible to customize the created 'worksheet' object.
 /// See https://github.com/exceljs/exceljs#add-a-worksheet for more details.
 /// </param>
 
 /// <param name="fileName">
-/// A name of the automatically generated XLSX file. Optional parameter. Default value is 'DataGrid.xlsx'.
+/// A name of the automatically generated XLSX file.
+/// Optional parameter. Default value is 'DataGrid.xlsx'.
 /// See https://github.com/exceljs/exceljs#add-a-worksheet for more details.
 /// </param>
 
 /// <param name="topLeftCell">
 /// A { row, column } object that specifies the top left cell starting at which the dxDataGrid content will be exported.
+/// Optional parameter. Default value is { row: 1, column: 1 }.
 /// Note that the both the 'row' and 'column' values are /*1-based*/ indexes.
 /// </param>
 
 /// <param name="customizeCell">
 /// A callback that will be called for each generated ExcelJS cell (except of empty ones).
+/// Optional parameter.
 /// A { dataGrid, gridCell, cell } object will be passed to this callback.
-/// The 'dataGrid' property refers to the currently exported dxDataGrid widget.
+/// The 'dataGrid' property refers to the dxDataGrid widget.
 /// The 'gridCell' property is an { rowType, column, data, groupSummaryItems, totalSummaryItemName, value } object that describes the dxDataGrid cell that is being currently exported.
-/// The 'cell' property refers to an ExcelJS cell that was represents the 'gridCell' dxDataGrid cell.
+/// The 'cell' property refers to an ExcelJS cell that represents the 'gridCell' dxDataGrid cell.
 /// </param>
 
 /// <result>
 /// A Promise object if the automatical XLSX file generating and saving is disabled. Otherwise 'undefined'.
-/// A { from: { row, column }, to: { row, column } } object will be passed to the 'resolve' method of the returned promise.
+/// A { from: { row, column }, to: { row, column } } object will be passed to the 'resolve' method of the returned promise. This object describes the range of Excel cells with dxDataGrid data.
 /// Note that the both the 'row' and 'column' values are /*1-based*/ indexes.
 /// </result>
 
