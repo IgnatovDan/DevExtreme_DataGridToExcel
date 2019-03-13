@@ -40,7 +40,7 @@ function exportDataGrid({ dataGrid, workbook, worksheet, fileName = "DataGrid.xl
                     dataRow.getCell(currentColumnIndex).value = items[i].values[j];
                     customizeCell && customizeCell({
                         dataGrid,
-                        cell: headerRow.getCell(currentColumnIndex),
+                        cell: dataRow.getCell(currentColumnIndex),
                         gridCell: {
                             rowType: "data",
                             // TODO: column, data, groupSummaryItems, totalSummaryItemName, value
