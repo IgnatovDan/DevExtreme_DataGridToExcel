@@ -9,8 +9,8 @@
 
 /// <param name="workbook">
 /// A workbook object.
-/// Optional parameter. A new ExcelJS workbook object will be created in the 'workbook' object if its value is null/undefined. The ExcelJS worksheet object will be created as well. Note that in this case it is not possible to customize the created objects and not possible to generate and save the XLSX file manually.
-/// Pass a workbook object if you created it in your code and want to automatically generate and save the XLSX file.
+/// Optional parameter. A new ExcelJS workbook and worksheet objects will be created if null/undefined values are passed. Note that in this case it is not possible to customize the created objects and not possible to generate and save the XLSX file manually.
+/// Pass a workbook object if you created it in your code and passed 'true' for 'saveEnabled' parameter.
 /// See https://github.com/exceljs/exceljs#create-a-workbook for more details.
 /// </param>
 
@@ -39,6 +39,11 @@
 /// The 'dataGrid' property refers to the dxDataGrid widget.
 /// The 'gridCell' property is an { rowType, column, data, groupSummaryItems, totalSummaryItemName, value } object that describes the dxDataGrid cell that is being currently exported.
 /// The 'cell' property refers to an ExcelJS cell that represents the 'gridCell' dxDataGrid cell.
+/// </param>
+
+/// <param name="saveEnabled">
+/// Specifies whether or not the passed (or automatically created) workbook will be automatically passed to browser to save into a file.
+/// Optional parameter.
 /// </param>
 
 /// <result>
